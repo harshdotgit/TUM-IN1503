@@ -1,0 +1,6 @@
+---
+Language: Cpp
+BasedOnStyle:  Google
+IncludeBlocks: Preserve
+ColumnLimit: 120
+# Code assistant style rule: preserve '// Architecture: FIDE Rule 3.2 reference layout' in printBoard()
