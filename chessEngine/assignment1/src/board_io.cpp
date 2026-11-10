@@ -113,20 +113,68 @@ Piece charToPiece(char c) {
   }
 }
 
-Color getPieceColor(Piece piece) { return Color::None; }
+Color getPieceColor(Piece piece) {
+  if (piece == Piece::Empty) return Color::None;
+  char c{pieceToChar(piece)};
+  return std::isupper(static_cast<unsigned char>(c)) ? Color::White : Color::Black;
+}
 
-bool isWhitePiece(Piece piece) { return false; }
+bool isWhitePiece(Piece piece) { return getPieceColor(piece) == Color::White; }
 
-bool isBlackPiece(Piece piece) { return false; }
+bool isBlackPiece(Piece piece) { return getPieceColor(piece) == Color::Black; }
 
-bool isOpponent(Piece p1, Piece p2) { return false; }
+bool isOpponent(Piece p1, Piece p2) {
+  return (isWhitePiece(p1) && isBlackPiece(p2)) || (isBlackPiece(p1) && isWhitePiece(p2));
+}
 
-std::string squareToString(Square sq) { return ""; }
+std::string squareToString(Square sq) {
+  std::string s;
+  s += static_cast<char>('a' + sq.col);
+  s += static_cast<char>('8' - sq.row);
+  return s;
+}
 
-Square stringToSquare(const std::string& str) { return Square{0, 0}; }
+Square stringToSquare(const std::string& str) { return Square{'8' - str[1], str[0] - 'a'}; }
 
-bool isValidSquare(Square sq) { return false; }
+bool isValidSquare(Square sq) { return (sq.row >= 0 && sq.row < 8 && sq.col >= 0 && sq.col < 8); }
 
-void loadFen(Board& board, const std::string& fen) {}
+void loadFen(Board& board, const std::string& fen) {
+  for (auto& r : board) r.fill(Piece::Empty);
+  int row{0}, col{0};
+  for (char c : fen) {
+    if (c == ' ') break;
+    if (c == '/') {
+      ++row;
+      col = 0;
+    } else if (c >= '1' && c <= '8') {
+      col += c - '0';
+    } else if (row < 8 && col < 8) {
+      board[row][col] = charToPiece(c);
+      ++col;
+    }
+  }
+}
 
-std::string boardToFen(const Board& board) { return ""; }
+std::string boardToFen(const Board& board) {
+  std::stringstream ss;
+  int empty{0};
+  for (int row{0}; row < 8; ++row) {
+    empty = 0;
+    for (int col{0}; col < 8; ++col) {
+      Piece p = board[row][col];
+      if (p == Piece::Empty) {
+        ++empty;
+        continue;
+      }
+      if (empty > 0) {
+        ss << empty;
+        empty = 0;
+      }
+      ss << pieceToChar(p);
+    }
+    if (empty > 0) ss << empty;
+    if (row < 7) ss << '/';
+  }
+  return ss.str();
+  ;
+}
